@@ -33,6 +33,20 @@ var slide_timer_max = 1.0
 var slide_vector = Vector2.ZERO
 var slide_speed = 10.0
 
+#head bobbing variables
+
+const head_bobbing_sprinting_speed = 22.0
+const head_bobbing_walking_speed = 14.0
+const head_bobbing_crouching_speed = 10.0
+
+const head_bobbing_sprinting_intensity = 0.2
+const head_bobbing_walking_intensity = 0.1
+const head_bobbing_crouching_intensity = 0.05
+
+var head_bobbing_vector = Vector2.ZERO
+var head_bobbing_index = 0.0
+var head_bobbing_current_intensity = 0.0
+
 #movement variables
 
 var lerp_speed = 10.0
@@ -141,6 +155,15 @@ func _physics_process(delta):
 			free_looking = false
 			print("Slide end")
 
+	# head bobbing
+	
+	if sprinting:
+		head_bobbing_current_intensity = head_bobbing_sprinting_intensity
+	elif walking:
+		head_bobbing_current_intensity = head_bobbing_walking_intensity
+	elif crouching:
+		head_bobbing_current_intensity = head_bobbing_crouching_intensity
+	
 	# Add the gravity.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
