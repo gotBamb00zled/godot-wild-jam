@@ -13,9 +13,9 @@ var direction = Vector3.ZERO
 
 #speed variables
 
-var current_speed = 6.0
-const walking_speed = 5.0
-const sprinting_speed = 12.0
+var current_speed = 9.0
+const walking_speed = 9.0
+const sprinting_speed = 27.0
 const crouching_speed = 3.0
 
 # states for state machine
@@ -31,8 +31,11 @@ var sliding = false
 var slide_timer = 0.0
 var slide_timer_max = 1.0
 var slide_vector = Vector2.ZERO
-var slide_speed = 10.0
+var slide_speed = 13.0
 
+
+
+"""
 #head bobbing variables
 
 const head_bobbing_sprinting_speed = 22.0
@@ -47,16 +50,23 @@ var head_bobbing_vector = Vector2.ZERO
 var head_bobbing_index = 0.0
 var head_bobbing_current_intensity = 0.0
 
+"""
+
 #movement variables
 
 var lerp_speed = 10.0
 const jump_velocity = 3.75
 var crouching_depth = -0.5
+#toDo get rid of freelook or rework
 var free_look_tilt_amount = 8
 
 #input variables
 
 const mouse_sens = 0.3
+
+"""
+END OF VARIABLES
+"""
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -77,8 +87,8 @@ func _input(event):
 			neck.rotation.y = clamp(neck.rotation.y,deg_to_rad(-120), deg_to_rad(120))
 		else:
 			rotate_y(deg_to_rad(-event.relative.x * mouse_sens))
-		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sens))
-		head.rotation.x = clamp(head.rotation.x,deg_to_rad(-89), deg_to_rad(89))
+			head.rotate_x(deg_to_rad(-event.relative.y * mouse_sens))
+			head.rotation.x = clamp(head.rotation.x,deg_to_rad(-89), deg_to_rad(89))
 	
 func _physics_process(delta):
 	
@@ -133,14 +143,11 @@ func _physics_process(delta):
 			sprinting = false
 			crouching = true
 			
-	#freelooking
-	if Input.is_action_pressed("free_look") || sliding:
+	#add freelook option while sliding
+	if Input.is_action_pressed("free_look"):
 		free_looking = true
+		camera_3d.rotation.z = -deg_to_rad(neck.rotation.y * free_look_tilt_amount)
 		
-		if sliding:
-			camera_3d.rotation.z = lerp(camera_3d.rotation.z,-deg_to_rad(7.0),delta * lerp_speed)
-		else:
-			camera_3d.rotation.z = -deg_to_rad(neck.rotation.y * free_look_tilt_amount)
 	else:
 		free_looking = false
 		neck.rotation.y = lerp(neck.rotation.y, 0.0, delta*lerp_speed)
@@ -152,23 +159,25 @@ func _physics_process(delta):
 		slide_timer -= delta
 		if slide_timer <= 0:
 			sliding = false
-			free_looking = false
 			print("Slide end")
 
+	"""
 	# head bobbing
 	
 	if sprinting:
 		head_bobbing_current_intensity = head_bobbing_sprinting_intensity
+		head_bobbing_index += head_bobbing_sprinting_speed*delta
 	elif walking:
 		head_bobbing_current_intensity = head_bobbing_walking_intensity
+		head_bobbing_index += head_bobbing_walking_speed*delta
 	elif crouching:
 		head_bobbing_current_intensity = head_bobbing_crouching_intensity
+		head_bobbing_index += head_bobbing_crouching_speed*delta
+	"""
 	
 	# Add the gravity.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
-		
-	
 		
 	if Input.is_action_pressed("sprint"):
 		current_speed = sprinting_speed
@@ -176,10 +185,12 @@ func _physics_process(delta):
 		walking = false
 		sprinting = true
 		crouching = false
-	# Handle Jump.
+	# badcode - he's making our velocity be upward jump velocify if we hit spacebar when we're on floor. also sets slide to false no matter what.
+	"""
 	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		velocity.y = jump_velocity
 		sliding = false
+	"""
 		
 	if sliding:
 		direction = (transform.basis * Vector3(slide_vector.x, 0, slide_vector.y)).normalized()
